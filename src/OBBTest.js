@@ -32,6 +32,9 @@ var OOBSprite = cc.Sprite.extend({
                 if (t < min) min = t;
                 else if (t > max) max = t;
             }
+
+            // 为了保证性能,求的是平方的, 所以如果有重叠, 则范围是
+            // [origin, 1 + origin]
             if ((max < origin) || (min > (1 + origin))) {
                 return false;
             }
