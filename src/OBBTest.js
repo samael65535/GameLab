@@ -2,8 +2,6 @@
  * Created by samael on 4/16/16.
  */
 
-
-
 var OOBSprite = cc.Sprite.extend({
     _axis: null,
     corner: null,
@@ -113,13 +111,12 @@ var OBBTest = cc.Layer.extend({
     update: function(dt) {
         this._sp1.computeAxes();
         this._draw1.clear();
-        this._draw1.drawPoly(this._sp1.corner, cc.color(128, 128, 0, 255), 2, cc.color(128, 128, 0, 255));
+        this._draw1.drawPoly(this._sp1.corner, cc.color(128, 128, 0, 0), 2, cc.color(128, 128, 0, 255));
         this._sp2.computeAxes();
         this._draw2.clear();
-        this._draw2.drawPoly(this._sp2.corner, cc.color(128, 128, 0, 255), 2, cc.color(128, 128, 0, 255));
+        this._draw2.drawPoly(this._sp2.corner, cc.color(128, 128, 0, 0), 2, cc.color(128, 128, 0, 255));
         if (this._sp1.isOverlaps(this._sp2)) {
             if (this._sp2.isOverlaps(this._sp1)) {
-                console.log("hehe");
                 this._sp2.setColor(cc.color(255, 0, 0));
             }
         } else {
