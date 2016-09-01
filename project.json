@@ -12,7 +12,8 @@
     "modules" : ["cocos2d"],
 
     "jsList" : [
-        "src/resource.js",
+        "src/Fluid.js",
+    "src/resource.js",
         "src/app.js",
         "src/OBBTest.js"
     ]
