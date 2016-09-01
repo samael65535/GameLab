@@ -15,7 +15,6 @@ var DrawSectorLayer = cc.Layer.extend({
         // 扇形绘制
         // TODO 增加渐变效果
         if (!node) return;
-        var start = cc.v2fadd(origin, cc.v2f(radius, 0));
         var angle_step = 2 * Math.PI * angle_degree / 360 / numOfPoint;
         var circle = [];
         circle.push(origin);
@@ -26,5 +25,5 @@ var DrawSectorLayer = cc.Layer.extend({
             circle.push(cc.v2f(x, y));
         }
         node.drawPoly(circle, fillColor, borderWidth, borderColor)
-    },
+    }
 });
