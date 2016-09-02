@@ -3,8 +3,11 @@ var res = {
 };
 
 var g_resources = [
-    "res/hue.fsm",
+    "res/hue.fsh",
     "res/hue.vsh",
+    "res/Outline.fsh",
+    "res/ColorBars.vsh",
+    "res/ColorBars.fsh",
     "res/alien.png",
     "res/test4.png"
 ];

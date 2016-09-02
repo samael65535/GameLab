@@ -12,10 +12,10 @@
     "modules" : ["cocos2d"],
 
     "jsList" : [
+		"src/resource.js",
         "src/Util.js",
 		"src/Fluid.js",
 		"src/HueTest.js",
-		"src/resource.js",
         "src/app.js",
         "src/OBBTest.js"
     ]

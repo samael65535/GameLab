@@ -116,10 +116,15 @@ var SpriteHue = cc.Sprite.extend({
                 this.updateMyColor();
 
             } else {
-                //this.shaderProgram = new cc.GLProgram("res/hub.vsh", "res/hub.fsh");
-                //this.shaderProgram.link();
-                //this.shaderProgram.updateUniforms();
-                //this.shaderProgram.use();
+                var glprogram = new cc.GLProgram("res/hue.vsh", "res/hue.fsh");
+                glprogram.addAttribute(cc.ATTRIBUTE_NAME_POSITION, cc.VERTEX_ATTRIB_POSITION);
+                glprogram.addAttribute(cc.ATTRIBUTE_NAME_TEX_COORD, cc.VERTEX_ATTRIB_TEX_COORDS);
+                glprogram.addAttribute(cc.ATTRIBUTE_NAME_COLOR, cc.VERTEX_ATTRIB_COLOR);
+                glprogram.link();
+                glprogram.updateUniforms();
+                glprogram.use();
+                this.shaderProgram = glprogram;
+                this.updateMyColor();
             }
         }
     },
@@ -131,20 +136,34 @@ var SpriteHue = cc.Sprite.extend({
     },
 
     updateAlpha: function() {
-        var state = this.getGLProgramState();
-        state.setUniformFloat("u_alpha", this.getOpacity() / 255);
+        if (cc.sys.isNative) {
+            var state = this.getGLProgramState();
+            state.setUniformLocationWith1f("u_alpha", this.getOpacity() / 255);
+        } else {
+            this.shaderProgram.setUniformLocationWith1f(this.shaderProgram.getUniformLocationForName('u_alpha'), this.getOpacity() / 255);
+        }
     },
 
     hueUniformCallback: function(p, u) {
-        this._mat = new Float32Array(this._mat);
-        gl.uniformMatrix3fv(u.location, false, this._mat);
+        if (cc.sys.isNative) {
+            this._mat = new Float32Array(this._mat);
+            gl.uniformMatrix3fv(u.location, false, this._mat);
+        } else {
+
+        }
     },
 
     updateColorMatrix: function() {
         this._mat = hueMatrix(this._mat, this._hue);
         this._mat = premultiplyAlpha(this._mat, this.getOpacity() / 255);
-        var state = this.getGLProgramState();
-        state.setUniformCallback("u_hue", this.hueUniformCallback.bind(this));
+        if (cc.sys.isNative) {
+            var state = this.getGLProgramState();
+            state.setUniformCallback("u_hue", this.hueUniformCallback.bind(this));
+        } else {
+            this._mat = new Float32Array(this._mat);
+            //this.shaderProgram.setUniformLocationWith4fv(this.shaderProgram.getUniformLocationForName('u_hue'), this._mat);
+          this.shaderProgram._glContext.uniformMatrix3fv(this.shaderProgram.getUniformLocationForName('u_hue'), false, this._mat)
+        }
     },
 
     setHue: function(h) {
@@ -155,14 +174,14 @@ var SpriteHue = cc.Sprite.extend({
 var HubTestLayer = cc.Layer.extend({
     ctor: function() {
         this._super();
-for (var i = 0; i <= 30; i++) {
-    var sprite = new SpriteHue("res/test4.png");
-    sprite.x = cc.winSize.width * Math.random();
-    sprite.y = cc.winSize.height * Math.random();
-    sprite.setScale(0.4);
-    sprite.setHue(Math.random()*2*Math.PI);
-    this.addChild(sprite);
-}
+        for (var i = 0; i <= 30; i++) {
+            var sprite = new SpriteHue("res/test4.png");
+            sprite.x = cc.winSize.width * Math.random();
+            sprite.y = cc.winSize.height * Math.random();
+            sprite.setScale(0.4);
+            sprite.setHue(Math.random()*2*Math.PI);
+            this.addChild(sprite);
+        }
         return true;
     }
 });
