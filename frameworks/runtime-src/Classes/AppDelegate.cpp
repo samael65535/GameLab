@@ -1,5 +1,5 @@
 #include "AppDelegate.h"
-
+#include "HelloWorldScene.h"
 #include "audio/include/SimpleAudioEngine.h"
 #include "scripting/js-bindings/auto/jsb_cocos2dx_3d_auto.hpp"
 #include "scripting/js-bindings/auto/jsb_cocos2dx_3d_extension_auto.hpp"
@@ -157,7 +157,12 @@ bool AppDelegate::applicationDidFinishLaunching()
 #endif
     ScriptEngineProtocol *engine = ScriptingCore::getInstance();
     ScriptEngineManager::getInstance()->setScriptEngine(engine);
+
     ScriptingCore::getInstance()->runScript("main.js");
+//
+    
+    // create a scene. it's an autorelease object
+//    director->runWithScene(HelloWorld::createScene());
 
     return true;
 }

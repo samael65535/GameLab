@@ -3,8 +3,10 @@ var res = {
 };
 
 var g_resources = [
-    "res/hub.fsm",
-    "res/hub.vsh"
+    "res/hue.fsm",
+    "res/hue.vsh",
+    "res/alien.png",
+    "res/test4.png"
 ];
 for (var i in res) {
     g_resources.push(res[i]);
