@@ -108,16 +108,11 @@ var SpriteHue = cc.Sprite.extend({
     initShader: function() {
         if ('opengl' in cc.sys.capabilities) {
             if (cc.sys.isNative) {
-
-                var glprogram = cc.shaderCache.getProgram("hue_program");
-                if (!glprogram) {
-                    var glprogram = new cc.GLProgram("res/hue.vsh", "res/hue.fsh");
-                    glprogram.link();
-                    glprogram.updateUniforms();
-                    var glprogramstate = cc.GLProgramState.getOrCreateWithGLProgram(glprogram);
-                    this.setGLProgramState(glprogramstate);
-                    cc.shaderCache.addProgram(glprogram, "hue_program");
-                }
+                var glprogram = new cc.GLProgram("res/hue.vsh", "res/hue.fsh");
+                glprogram.link();
+                glprogram.updateUniforms();
+                var glprogramstate = cc.GLProgramState.getOrCreateWithGLProgram(glprogram);
+                this.setGLProgramState(glprogramstate);
                 this.updateMyColor();
 
             } else {
