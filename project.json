@@ -13,8 +13,9 @@
 
     "jsList" : [
         "src/Util.js",
-    "src/Fluid.js",
-    "src/resource.js",
+		"src/Fluid.js",
+		"src/HubTest.js",
+		"src/resource.js",
         "src/app.js",
         "src/OBBTest.js"
     ]

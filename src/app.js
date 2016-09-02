@@ -8,7 +8,7 @@ var HelloWorldLayer = cc.Layer.extend({
 var HelloWorldScene = cc.Scene.extend({
     onEnter:function () {
         this._super();
-        var layer = new OBBTest();
+        var layer = new HubTestLayer();
         this.addChild(layer);
     }
 });
