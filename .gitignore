@@ -46,3 +46,8 @@ simulator/*
 frameworks/runtime-src/proj.android/libs/
 frameworks/cocos2d-x/
 frameworks/cocos2d-html5/
+
+
+frameworks/runtime-src/proj.android-studio/app/assets/
+frameworks/runtime-src/proj.android-studio/app/obj/local/armeabi/
+frameworks/runtime-src/proj.android-studio/app/libs/
