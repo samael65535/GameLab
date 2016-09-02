@@ -138,7 +138,7 @@ var SpriteHue = cc.Sprite.extend({
     updateAlpha: function() {
         if (cc.sys.isNative) {
             var state = this.getGLProgramState();
-            state.setUniformLocationWith1f("u_alpha", this.getOpacity() / 255);
+            state.setUniformFloat("u_alpha", this.getOpacity() / 255);
         } else {
             this.shaderProgram.setUniformLocationWith1f(this.shaderProgram.getUniformLocationForName('u_alpha'), this.getOpacity() / 255);
         }
@@ -162,7 +162,8 @@ var SpriteHue = cc.Sprite.extend({
         } else {
             this._mat = new Float32Array(this._mat);
             //this.shaderProgram.setUniformLocationWith4fv(this.shaderProgram.getUniformLocationForName('u_hue'), this._mat);
-          this.shaderProgram._glContext.uniformMatrix3fv(this.shaderProgram.getUniformLocationForName('u_hue'), false, this._mat)
+            this.shaderProgram.setUniformLocationWithMatrix3fv(this.shaderProgram.getUniformLocationForName('u_hue'), this._mat);
+            //this.shaderProgram.setUniformLocationWithMatrix3fv(this.shaderProgram.getUniformLocationForName('u_hue'), false, this._mat)
         }
     },
 
