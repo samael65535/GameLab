@@ -17,6 +17,7 @@
 		"src/Fluid.js",
 		"src/HueTest.js",
         "src/app.js",
-        "src/OBBTest.js"
+        "src/OBBTest.js",
+		"src/RayTracingTest.js"
     ]
 }

@@ -5,8 +5,11 @@ var res = {
 var g_resources = [
     "res/hue.fsh",
     "res/hue.vsh",
-    "res/alien.png",
-    "res/test4.png"
+    "res/test4.png",
+    "res/tile.jpg",
+    "res/map.tmx",
+    "res/player.jpg",
+    "res/ground.jpg"
 ];
 for (var i in res) {
     g_resources.push(res[i]);
