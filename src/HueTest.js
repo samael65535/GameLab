@@ -161,9 +161,7 @@ var SpriteHue = cc.Sprite.extend({
             state.setUniformCallback("u_hue", this.hueUniformCallback.bind(this));
         } else {
             this._mat = new Float32Array(this._mat);
-            //this.shaderProgram.setUniformLocationWith4fv(this.shaderProgram.getUniformLocationForName('u_hue'), this._mat);
             this.shaderProgram.setUniformLocationWithMatrix3fv(this.shaderProgram.getUniformLocationForName('u_hue'), this._mat);
-            //this.shaderProgram.setUniformLocationWithMatrix3fv(this.shaderProgram.getUniformLocationForName('u_hue'), false, this._mat)
         }
     },
 
