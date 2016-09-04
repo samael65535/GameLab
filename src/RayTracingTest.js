@@ -164,24 +164,26 @@ var RayTracing = cc.Layer.extend({
         }
         switch(dir) {
             case 1: // up
-                p = cc.p(0, 1);
+                p = cc.p(0, -1);
                 break;
             case 2: // right
                 p = cc.p(1, 0);
                 break;
             case 3: // down
-                p = cc.p(0, -1);
+                p = cc.p(0, 1);
                 break;
             case 4: // left
                 p = cc.p(-1, 0);
                 break;
         }
-
+        var targetPos = cc.pAdd(this._player.TilePos, p);
+        var targetTile = this._mapWall.getTileAt(targetPos);
+        if (targetTile != null) return;
         this._player.runAction(cc.sequence(
-            cc.moveBy(0.3, p.x*50, p.y*50),
+            cc.moveBy(0.3, p.x*100, -p.y*100),
             cc.callFunc(function(p) {
-                this._player.TilePos.x += p.x;
-                this._player.TilePos.y += p.y;
+                var targetPos = cc.pAdd(this._player.TilePos, p);
+                this._player.TilePos = targetPos;
             }.bind(this, p))
         ));
     },
