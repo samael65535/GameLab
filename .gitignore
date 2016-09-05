@@ -5,7 +5,7 @@ thumbs.db
 *.DS_Store
 local.properties
 libgame.so
-
+*.iml
 *.jsc
 *.pid
 *.class
