@@ -170,6 +170,7 @@ var SpriteHue = cc.Sprite.extend({
         this.updateColorMatrix();
     }
 });
+
 var HubTestLayer = cc.Layer.extend({
     ctor: function() {
         this._super();
