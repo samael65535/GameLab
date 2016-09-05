@@ -13,13 +13,21 @@ var RayTracing = cc.Layer.extend({
     _map: null,
     _mapWall: null,
     _mapGround: null,
-    _mapData: null,
+    _edges: null,
     _player: null,
     ctor: function() {
         this._super();
+
+        var draw = new cc.DrawNode();
+
         this.initMap();
         this.initPoints();
         this.initPlayer();
+
+        this._drawNode = draw;
+        this._map.addChild(draw, 200);
+        this._edges = [];
+
         this.initMapData();
         return true;
     },
@@ -189,31 +197,139 @@ var RayTracing = cc.Layer.extend({
     },
 
     initMapData: function() {
-        this._mapData = [];
-        var draw = new cc.DrawNode();
-        this._map.addChild(draw, 200);
-        for (var i = 0; i < 32; i++) {
-            this._mapData[i] = [];
-            for (var j = 0; j < 32; j++) {
-                var tile = this._mapWall.getTileAt(i,j);
-                if (tile) {
-                    var lb = cc.p(tile.x , tile.y );
-                    var lt = cc.p(tile.x, tile.y + 100);
-                    var rb = cc.p(tile.x + 100, tile.y);
-                    var rt = cc.p(tile.x + 100, tile.y + 100);
-                    draw.drawSegment(lb, lt, 2, cc.color.RED);
-                    draw.drawSegment(lt, rt, 2, cc.color.RED);
+        var draw = this._drawNode;
+        draw.clear();
 
-                    draw.drawSegment(rt, rb, 2, cc.color.RED);
-                    draw.drawSegment(rb, lb, 2, cc.color.RED);
+        for (var i = 1; i < 31; i++) {
+            for (var j = 1; j < 31; j++) {
+                var tile = this._mapWall.getTileAt(i,j);
+                if (tile == null) continue;
+                var lb = cc.p(tile.x , tile.y );
+                var lt = cc.p(tile.x, tile.y + 100);
+                var rb = cc.p(tile.x + 100, tile.y);
+                var rt = cc.p(tile.x + 100, tile.y + 100);
+
+
+                var px = this._player.x;
+                var py = this._player.y;
+                var p1, p2, pt = null;
+                var x1 = lt.x, y1 = lt.y;
+                var x2 = rt.x, y2 = rt.y;
+                var x3 = lb.x, y3 = lb.y;
+                var x4 = rb.x, y4 = rb.y;
+                // 判断光照边
+                if (px >= x1 && px <= x2) {
+                    if (py > y2) { // 上
+                        p1 = cc.p(x1, y1);
+                        p2 = cc.p(x2, y2);
+                        tile = this._mapWall.getTileAt(i,j-1);
+                    }
+                    if (py < y4) { // 下
+                        p1 = cc.p(x4, y4);
+                        p2 = cc.p(x3, y3);
+                        tile = this._mapWall.getTileAt(i,j+1);
+                    }
+
+                    if(tile!=null) continue;
+                } else {
+                    if(px > x2)  {
+                        if (py > y2) { // 右上
+                            p1 = cc.p(x1, y1);
+                            p2 = cc.p(x4, y4);
+                            pt = cc.p(x2, y2);
+
+                            tile = this._mapWall.getTileAt(i,j-1);
+                            if (tile) {
+                                p1 = cc.p(x2, y2);
+                                pt = null;
+                            }
+                            tile = this._mapWall.getTileAt(i+1,j);
+                            if (tile) {
+                                p2 = cc.p(x2, y2);
+                                pt = null;
+                            }
+
+                        } else if (py < y4) { // 右下
+                            p1 = cc.p(x2, y2);
+                            p2 = cc.p(x3, y3);
+                            pt = cc.p(x4, y4);
+
+                            tile = this._mapWall.getTileAt(i+1,j);
+                            if (tile) {
+                                p1 = cc.p(x4, y4);
+                                pt = null;
+                            }
+
+                            tile = this._mapWall.getTileAt(i,j+1);
+                            if (tile) {
+                                p2 = cc.p(x4, y4);
+                                pt = null;
+                            }
+
+                        } else { // 右
+                            p1 = cc.p(x2, y2);
+                            p2 = cc.p(x4, y4);
+                            tile = this._mapWall.getTileAt(i+1,j);
+                            if(tile!=null) continue;
+                        }
+
+                    }
+                    else if(px < x1){
+                        if (py > y2) { // 左上
+                            p1 = cc.p(x3, y3);
+                            p2 = cc.p(x2, y2);
+                            pt = cc.p(x1, y1);
+
+                            tile = this._mapWall.getTileAt(i-1,j);
+                            if (tile) {
+                                p1 = cc.p(x1, y1);
+                                pt = null;
+                            }
+
+                            tile = this._mapWall.getTileAt(i,j-1);
+                            if (tile) {
+                                p2 = cc.p(x1, y1);
+                                pt = null;
+                            }
+
+                        } else if (py < y4) { // 左下
+                            p1 = cc.p(x4, y4);
+                            p2 = cc.p(x1, y1);
+                            pt = cc.p(x3, y3);
+
+                            tile = this._mapWall.getTileAt(i,j+1);
+                            if (tile) p1 = cc.p(x3, y3);
+
+                            tile = this._mapWall.getTileAt(i-1,j);
+                            if (tile) p2 = cc.p(x3, y3);
+
+                        } else { // 左
+                            p1 = cc.p(x3, y3);
+                            p2 = cc.p(x1, y1);
+                            tile = this._mapWall.getTileAt(i-1,j);
+                            if(tile!=null) continue;
+                        }
+
+                    }
+
                 }
-                //var d = {
-                //    p1: null,
-                //    p2: null,
-                //    next: -1,
-                //    prev: -1,
-                //    distance: cc.pDistance(cc.p(i, j), this._player.TilePos)
-                //}
+                if (i==13&&j==16) {}
+                //if (p1.x == p2.x && p1.y == p2.y) continue;
+                if (pt) {
+                    draw.drawSegment(p1, pt, 2, cc.color.RED);
+                    draw.drawSegment(pt, p2, 2, cc.color.RED);
+                } else {
+                    draw.drawSegment(p1, p2, 2, cc.color.RED);
+                }
+
+                var d = {
+                    p1: p1,
+                    p2: p2,
+                    next: -1,
+                    prev: -1,
+                    distance: cc.pDistance(cc.p(i, j), this._player.TilePos)
+                };
+                this._edges.push(d);
             }
         }
     },
