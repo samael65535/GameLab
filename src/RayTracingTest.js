@@ -20,7 +20,7 @@ var RayTracing = cc.Layer.extend({
         this.initMap();
         this.initPoints();
         this.initPlayer();
-
+        this.initMapData();
         return true;
     },
 
@@ -187,6 +187,38 @@ var RayTracing = cc.Layer.extend({
             }.bind(this, p))
         ));
     },
+
+    initMapData: function() {
+        this._mapData = [];
+        var draw = new cc.DrawNode();
+        this._map.addChild(draw, 200);
+        for (var i = 0; i < 32; i++) {
+            this._mapData[i] = [];
+            for (var j = 0; j < 32; j++) {
+                var tile = this._mapWall.getTileAt(i,j);
+                if (tile) {
+                    var lb = cc.p(tile.x , tile.y );
+                    var lt = cc.p(tile.x, tile.y + 100);
+                    var rb = cc.p(tile.x + 100, tile.y);
+                    var rt = cc.p(tile.x + 100, tile.y + 100);
+                    draw.drawSegment(lb, lt, 2, cc.color.RED);
+                    draw.drawSegment(lt, rt, 2, cc.color.RED);
+
+                    draw.drawSegment(rt, rb, 2, cc.color.RED);
+                    draw.drawSegment(rb, lb, 2, cc.color.RED);
+                }
+                //var d = {
+                //    p1: null,
+                //    p2: null,
+                //    next: -1,
+                //    prev: -1,
+                //    distance: cc.pDistance(cc.p(i, j), this._player.TilePos)
+                //}
+            }
+        }
+    },
+
+
     onEnter: function() {
         this._super();
         this._touchListener = Util.registerTouchEventAllAtOnce(this, true);
