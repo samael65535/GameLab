@@ -28,7 +28,7 @@ var RayTracing = cc.Layer.extend({
         this._map.addChild(draw, 200);
         this._edges = [];
 
-        this.initMapData();
+        this.updateMapData();
         return true;
     },
 
@@ -192,11 +192,12 @@ var RayTracing = cc.Layer.extend({
             cc.callFunc(function(p) {
                 var targetPos = cc.pAdd(this._player.TilePos, p);
                 this._player.TilePos = targetPos;
+                this.updateMapData();
             }.bind(this, p))
         ));
     },
 
-    initMapData: function() {
+    updateMapData: function() {
         var draw = this._drawNode;
         draw.clear();
 
