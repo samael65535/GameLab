@@ -212,11 +212,11 @@ var RayTracing = cc.Layer.extend({
         var draw = this._drawNode;
         draw.clear();
         this.edges = [];
-        for (var y = 1; y < 31; y++) {
-            for (var x = 1; x < 31; x++) {
+        for (var x = 1; x < 31; x++) {
+            for (var y = 1; y < 31; y++) {
                 var tile = this._mapWall.getTileAt(x,y);
                 if (tile == null) continue;
-                var lb = cc.p(tile.x , tile.y );
+                var lb = cc.p(tile.x , tile.y);
                 var lt = cc.p(tile.x, tile.y + 100);
                 var rb = cc.p(tile.x + 100, tile.y);
                 var rt = cc.p(tile.x + 100, tile.y + 100);
@@ -228,28 +228,33 @@ var RayTracing = cc.Layer.extend({
                 //var x2 = rt.x, y2 = rt.y;
                 //var x3 = lb.x, y3 = lb.y;
                 //var x4 = rb.x, y4 = rb.y;
-                // check for up side, data direction >>>
+
                 var distance = cc.pDistance(tile.getPosition(), cc.p(px, py));
-                if ((this._mapWall.getTileAt(x,y-1) == null) && (py > lt.y)) {
+
+                if (y == 15 && x == 16) {
+                    cc.log("kdkdk");
+                }
+                // check for up side, data direction >>>
+                if ((this._mapWall.getTileAt(x,y-1) == null) && (py-50 >= lt.y)) {
                     p1 = lt;
                     p2 = rt;
                     this.addEdge(p1, p2, distance, y, x);
                 }
 
                 // check for down side, data direction <<<
-                if ((this._mapWall.getTileAt(x,y+1) == null) && (py < rb.y)) {
+                if ((this._mapWall.getTileAt(x,y+1) == null) && (py+50 <= rb.y)) {
                     p1 = rb;
                     p2 = lb;
                     this.addEdge(p1, p2, distance, y, x);
                 }
                 // check for left side, data direction ^^^
-                if ((this._mapWall.getTileAt(x-1,y) == null) && (px < lt.x)) {
+                if ((this._mapWall.getTileAt(x-1,y) == null) && (px+50 <= lt.x)) {
                     p1 = lb;
                     p2 = lt;
                     this.addEdge(p1, p2, distance, y, x);
                 }
                 // check for right side, data direction vvv
-                if ((this._mapWall.getTileAt(x+1,y) == null) && (px > rt.x)) {
+                if ((this._mapWall.getTileAt(x+1,y) == null) && (px-50 >= rt.x)) {
                     p1 = rt;
                     p2 = rb;
                     this.addEdge(p1, p2, distance, y, x);
@@ -278,6 +283,7 @@ var RayTracing = cc.Layer.extend({
         this.updateEdges();
 
         var edge = this.edges[0];
+        draw.drawSegment(edge.p1, edge.p2, 2, cc.color.RED);
         var next = edge.next;
         var targetEdge;
         while (next > 0) {
@@ -289,56 +295,6 @@ var RayTracing = cc.Layer.extend({
         //_.each(this.edges, function(targetEdge){
         //    draw.drawSegment(targetEdge.p1, targetEdge.p2, 2, cc.color.RED);
         //});
-    },
-
-    getLineABC: function(pt1, pt2) {
-        var abc;
-
-        if (cc.pSameAs(pt1, pt2)) {
-            abc = { a:0, b:0, c:0 };
-        } else if (pt1.x == pt2.x) {
-            abc = { a:1, b:0, c:-pt1.x }
-        } else {
-            abc = { a:-(pt2.y - pt1.y) / (pt2.x - pt1.x), b:1, c:pt1.x * (pt2.y - pt1.y) / (pt2.x - pt1.x) - pt1.y };
-        }
-
-        return abc;
-    },
-
-
-    /**
-     * Get intersection point
-     * @param abc1
-     * @param abc2
-     * @returns {{x: number, y: number}}
-     */
-    getIntersectionPoint: function(abc1, abc2) {
-        var p = { x:0, y:0 };
-        var x = 0,
-            y = 0;
-        var a1 = abc1.a, b1 = abc1.b, c1 = abc1.c,
-            a2 = abc2.a, b2 = abc2.b, c2 = abc2.c;
-
-        if ((b1 == 0) && (b2 == 0)) {
-            return p;
-        } else if (b1 == 0) {
-            x = -c1;
-            y = -(a2 * x + c2) / b2;
-        } else if (b2 == 0) {
-            x = -c2;
-            y = -(a1 * x + c1) / b1;
-        } else {
-            if ((a1 / b1) == (a2 / b1)) {
-                return p;
-            } else {
-                x = (c1 - c2) / (a2  - a1);
-                y = -(a1 * x) - c1;
-            }
-        }
-
-        p = { x:x, y:y };
-
-        return p;
     },
 
     /**
@@ -415,8 +371,8 @@ var RayTracing = cc.Layer.extend({
                 //var abc = this.getLineABC(edge.p1, edge.p2);
                 //p = this.getIntersectionPoint(abc, lineABC);
                 p = cc.pIntersectPoint(edge.p1, edge.p2, lightSource, point);
-                if (cc.pSameAs(p, cc.p(0, 0))) continue;
-                if ((p.x == point.x) && (p.y == point.y))                continue;   // Skip current point, confirm
+                //if (cc.pSameAs(p, cc.p(0, 0))) continue;
+                if ((p.x == point.x) && (p.y == point.y))           continue;   // Skip current point, confirm
                 if ((lightSource.x > point.x) && (p.x > point.x))   continue;
                 if ((lightSource.x < point.x) && (p.x < point.x))   continue;
                 if ((lightSource.y > point.y) && (p.y > point.y))   continue;
