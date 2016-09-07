@@ -223,11 +223,8 @@ var RayTracing = cc.Layer.extend({
 
                 var px = this._player.x;
                 var py = this._player.y;
-                var p1, p2, pt = null;
-                //var x1 = lt.x, y1 = lt.y;
-                //var x2 = rt.x, y2 = rt.y;
-                //var x3 = lb.x, y3 = lb.y;
-                //var x4 = rb.x, y4 = rb.y;
+                var p1, p2;
+
 
                 var distance = cc.pDistance(tile.getPosition(), cc.p(px, py));
 
@@ -280,7 +277,7 @@ var RayTracing = cc.Layer.extend({
         }
 
 
-        this.updateEdges();
+        this.refreshEdges();
 
         var edge = this.edges[0];
         draw.drawSegment(edge.p1, edge.p2, 2, cc.color.RED);
@@ -326,15 +323,13 @@ var RayTracing = cc.Layer.extend({
         this.edges[targetEdgeID] = edgeToBeSliced;
     },
 
-    updateEdges: function() {
+    refreshEdges: function() {
         var edges = this.edges, abc;
         var lightSource = this._player.getPosition();
         for (var i = 0, m = edges.length; i < m; i++) {
             var e = edges[i];
             var intersectionData;
             if (e.next == -1) {
-                //abc = this.getLineABC(e.p2, lightSource);
-                //intersectionData = this.checkIntersection(abc, e.p1, i);
                 intersectionData = this.checkIntersection(lightSource, e.p2, i);
                 if (intersectionData.intersectID != -1) {
                     this.updateEdge(i, intersectionData.intersectID, {
@@ -345,8 +340,6 @@ var RayTracing = cc.Layer.extend({
             }
 
             if (e.prev == -1) {
-                //abc = this.getLineABC(e.p1, lightSource);
-                //intersectionData = this.checkIntersection(abc, e.p1, i);
                 intersectionData = this.checkIntersection(lightSource, e.p1, i);
                 // if found intersection point then split the edge at intersection point
                 if (intersectionData.intersectID != -1) {
@@ -368,10 +361,7 @@ var RayTracing = cc.Layer.extend({
         for (var i = 0, m = edges.length; i < m; i++) {
             if (i != currentID) {
                 var edge = edges[i];
-                //var abc = this.getLineABC(edge.p1, edge.p2);
-                //p = this.getIntersectionPoint(abc, lineABC);
                 p = cc.pIntersectPoint(edge.p1, edge.p2, lightSource, point);
-                //if (cc.pSameAs(p, cc.p(0, 0))) continue;
                 if ((p.x == point.x) && (p.y == point.y))           continue;   // Skip current point, confirm
                 if ((lightSource.x > point.x) && (p.x > point.x))   continue;
                 if ((lightSource.x < point.x) && (p.x < point.x))   continue;
