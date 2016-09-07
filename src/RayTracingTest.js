@@ -196,14 +196,15 @@ var RayTracing = cc.Layer.extend({
             }.bind(this, p))
         ));
     },
-    addEdge: function(p1, p2, distance) {
+    addEdge: function(p1, p2, distance, y, x) {
         var d = {
             p1: p1,
             p2: p2,
-//            pt: pt,
             next: -1,
             prev: -1,
-            distance: distance
+            distance: distance,
+            x: x,
+            y: y
         };
         this.edges.push(d);
     },
@@ -232,26 +233,26 @@ var RayTracing = cc.Layer.extend({
                 if ((this._mapWall.getTileAt(x,y-1) == null) && (py > lt.y)) {
                     p1 = lt;
                     p2 = rt;
-                    this.addEdge(p1, p2, distance);
+                    this.addEdge(p1, p2, distance, y, x);
                 }
 
                 // check for down side, data direction <<<
                 if ((this._mapWall.getTileAt(x,y+1) == null) && (py < rb.y)) {
                     p1 = rb;
                     p2 = lb;
-                    this.addEdge(p1, p2, distance)
+                    this.addEdge(p1, p2, distance, y, x);
                 }
                 // check for left side, data direction ^^^
                 if ((this._mapWall.getTileAt(x-1,y) == null) && (px < lt.x)) {
                     p1 = lb;
-                    p2 = lt
-                    this.addEdge(p1, p2, distance)
+                    p2 = lt;
+                    this.addEdge(p1, p2, distance, y, x);
                 }
                 // check for right side, data direction vvv
                 if ((this._mapWall.getTileAt(x+1,y) == null) && (px > rt.x)) {
                     p1 = rt;
                     p2 = rb;
-                    this.addEdge(p1, p2, distance)
+                    this.addEdge(p1, p2, distance, y, x);
                 }
             }
         }
@@ -259,18 +260,16 @@ var RayTracing = cc.Layer.extend({
         // Connect edges
         for (var i=0; i<this.edges.length; i++) {
             var eNow = this.edges[i];
-            if (eNow.prev != -1 && eNow.next != -1)
-                continue;
+            if (eNow.prev != -1 && eNow.next != -1) continue;
             for(var j=0; j<this.edges.length; j++) {
-                if (i == j)
-                    continue;
+                if (i == j) continue;
                 var eCheck = this.edges[j];
                 if (eCheck.prev != -1 && eCheck.next != -1)
                     continue;
 
-                if (cc.pSameAs(eNow, eCheck)) {
-                    eNow.next = j;
-                    eCheck.prev = i;
+                if (cc.pSameAs(eNow.p2, eCheck.p1)) {
+                    this.edges[i].next = j;
+                    this.edges[j].prev = i;
                 }
             }
         }
@@ -281,21 +280,15 @@ var RayTracing = cc.Layer.extend({
         var edge = this.edges[0];
         var next = edge.next;
         var targetEdge;
-        //while (next >= 0) {
-        //    targetEdge = this.edges[next];
-        //    if (targetEdge.pt) {
-        //        draw.drawSegment(targetEdge.p1, targetEdge.pt, 2, cc.color.RED);
-        //        draw.drawSegment(targetEdge.pt, targetEdge.p2, 2, cc.color.RED);
-        //    } else {
-        //        draw.drawSegment(targetEdge.p1, targetEdge.p2, 2, cc.color.RED);
-        //    }
-        //    next = targetEdge.next;
-        //
-        //}
-
-        _.each(this.edges, function(targetEdge){
+        while (next > 0) {
+            targetEdge = this.edges[next];
             draw.drawSegment(targetEdge.p1, targetEdge.p2, 2, cc.color.RED);
-        });
+            next = targetEdge.next;
+        }
+
+        //_.each(this.edges, function(targetEdge){
+        //    draw.drawSegment(targetEdge.p1, targetEdge.p2, 2, cc.color.RED);
+        //});
     },
 
     getLineABC: function(pt1, pt2) {
@@ -378,76 +371,52 @@ var RayTracing = cc.Layer.extend({
     },
 
     updateEdges: function() {
-        var edges = this.edges;
+        var edges = this.edges, abc;
+        var lightSource = this._player.getPosition();
         for (var i = 0, m = edges.length; i < m; i++) {
             var e = edges[i];
-            var abc;
             var intersectionData;
-            var lightSource = {
-                x: this._player.x,
-                y: this._player.y
-            };
             if (e.next == -1) {
-                abc = this.getLineABC(e.p2, lightSource);
-                intersectionData = this.checkIntersection(abc, e.p2, i);
+                //abc = this.getLineABC(e.p2, lightSource);
+                //intersectionData = this.checkIntersection(abc, e.p1, i);
+                intersectionData = this.checkIntersection(lightSource, e.p2, i);
                 if (intersectionData.intersectID != -1) {
-                    this.updateEdge(i, intersectionData.intersectID, { x:intersectionData.x, y:intersectionData.y }, true);
+                    this.updateEdge(i, intersectionData.intersectID, {
+                        x: intersectionData.x,
+                        y: intersectionData.y
+                    }, true);
                 }
             }
 
             if (e.prev == -1) {
-                abc = this.getLineABC(e.p1, lightSource);
-                intersectionData = this.checkIntersection(abc, e.p1, i);
-
+                //abc = this.getLineABC(e.p1, lightSource);
+                //intersectionData = this.checkIntersection(abc, e.p1, i);
+                intersectionData = this.checkIntersection(lightSource, e.p1, i);
                 // if found intersection point then split the edge at intersection point
                 if (intersectionData.intersectID != -1) {
-                    this.updateEdge(i, intersectionData.intersectID, { x:intersectionData.x, y:intersectionData.y }, false);
+                    this.updateEdge(i, intersectionData.intersectID, {
+                        x: intersectionData.x,
+                        y: intersectionData.y
+                    }, false);
                 }
             }
         }
     },
-    getIntersectionPoint: function(abc1, abc2) {
-        var p = { x:0, y:0 };
-        var x = 0,
-            y = 0;
-        var a1 = abc1.a, b1 = abc1.b, c1 = abc1.c,
-            a2 = abc2.a, b2 = abc2.b, c2 = abc2.c;
 
-        if ((b1 == 0) && (b2 == 0)) {
-            return p;
-        } else if (b1 == 0) {
-            x = -c1;
-            y = -(a2 * x + c2) / b2;
-        } else if (b2 == 0) {
-            x = -c2;
-            y = -(a1 * x + c1) / b1;
-        } else {
-            if ((a1 / b1) == (a2 / b1)) {
-                return p;
-            } else {
-                x = (c1 - c2) / (a2  - a1);
-                y = -(a1 * x) - c1;
-            }
-        }
-
-        p = { x:x, y:y };
-
-        return p;
-    },
-    checkIntersection: function(lineABC, point, currentID) {
+    checkIntersection: function(lightSource, point, currentID) {
+    //checkIntersection: function(lineABC, point, currentID) {
         var edges = this.edges;
-        var i,
-            p,
-            abc;
+        var i, p;
         var found = false;
-        var lightSource = { x:this._player.x, y:this._player.y };
+        //var lightSource = this._player.getPosition();
         for (var i = 0, m = edges.length; i < m; i++) {
             if (i != currentID) {
                 var edge = edges[i];
-                abc = this.getLineABC(edge.p1, edge.p2);
-                p = this.getIntersectionPoint(abc, lineABC);
-
-                if ((p.x == point.x) && (p.y == point.y))   continue;   // Skip current point, confirm
+                //var abc = this.getLineABC(edge.p1, edge.p2);
+                //p = this.getIntersectionPoint(abc, lineABC);
+                p = cc.pIntersectPoint(edge.p1, edge.p2, lightSource, point);
+                if (cc.pSameAs(p, cc.p(0, 0))) continue;
+                if ((p.x == point.x) && (p.y == point.y))                continue;   // Skip current point, confirm
                 if ((lightSource.x > point.x) && (p.x > point.x))   continue;
                 if ((lightSource.x < point.x) && (p.x < point.x))   continue;
                 if ((lightSource.y > point.y) && (p.y > point.y))   continue;
