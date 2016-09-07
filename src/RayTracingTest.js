@@ -13,20 +13,19 @@ var RayTracing = cc.Layer.extend({
     _map: null,
     _mapWall: null,
     _mapGround: null,
-    _edges: null,
+    edges: null,
     _player: null,
     ctor: function() {
         this._super();
-
-        var draw = new cc.DrawNode();
 
         this.initMap();
         this.initPoints();
         this.initPlayer();
 
-        this._drawNode = draw;
-        this._map.addChild(draw, 200);
-        this._edges = [];
+        this._drawNode = new cc.DrawNode();
+
+        this._map.addChild(this._drawNode, 200);
+        this.edges = [];
 
         this.updateMapData();
         return true;
@@ -187,6 +186,7 @@ var RayTracing = cc.Layer.extend({
         var targetPos = cc.pAdd(this._player.TilePos, p);
         var targetTile = this._mapWall.getTileAt(targetPos);
         if (targetTile != null) return;
+
         this._player.runAction(cc.sequence(
             cc.moveBy(0.3, p.x*100, -p.y*100),
             cc.callFunc(function(p) {
@@ -196,145 +196,294 @@ var RayTracing = cc.Layer.extend({
             }.bind(this, p))
         ));
     },
-
+    addEdge: function(p1, p2, distance) {
+        var d = {
+            p1: p1,
+            p2: p2,
+//            pt: pt,
+            next: -1,
+            prev: -1,
+            distance: distance
+        };
+        this.edges.push(d);
+    },
     updateMapData: function() {
         var draw = this._drawNode;
         draw.clear();
-
-        for (var i = 1; i < 31; i++) {
-            for (var j = 1; j < 31; j++) {
-                var tile = this._mapWall.getTileAt(i,j);
+        this.edges = [];
+        for (var y = 1; y < 31; y++) {
+            for (var x = 1; x < 31; x++) {
+                var tile = this._mapWall.getTileAt(x,y);
                 if (tile == null) continue;
                 var lb = cc.p(tile.x , tile.y );
                 var lt = cc.p(tile.x, tile.y + 100);
                 var rb = cc.p(tile.x + 100, tile.y);
                 var rt = cc.p(tile.x + 100, tile.y + 100);
 
-
                 var px = this._player.x;
                 var py = this._player.y;
                 var p1, p2, pt = null;
-                var x1 = lt.x, y1 = lt.y;
-                var x2 = rt.x, y2 = rt.y;
-                var x3 = lb.x, y3 = lb.y;
-                var x4 = rb.x, y4 = rb.y;
-                // 判断光照边
-                if (px >= x1 && px <= x2) {
-                    if (py > y2) { // 上
-                        p1 = cc.p(x1, y1);
-                        p2 = cc.p(x2, y2);
-                        tile = this._mapWall.getTileAt(i,j-1);
-                    }
-                    if (py < y4) { // 下
-                        p1 = cc.p(x4, y4);
-                        p2 = cc.p(x3, y3);
-                        tile = this._mapWall.getTileAt(i,j+1);
-                    }
-
-                    if(tile!=null) continue;
-                } else {
-                    if(px > x2)  {
-                        if (py > y2) { // 右上
-                            p1 = cc.p(x1, y1);
-                            p2 = cc.p(x4, y4);
-                            pt = cc.p(x2, y2);
-
-                            tile = this._mapWall.getTileAt(i,j-1);
-                            if (tile) {
-                                p1 = cc.p(x2, y2);
-                                pt = null;
-                            }
-                            tile = this._mapWall.getTileAt(i+1,j);
-                            if (tile) {
-                                p2 = cc.p(x2, y2);
-                                pt = null;
-                            }
-
-                        } else if (py < y4) { // 右下
-                            p1 = cc.p(x2, y2);
-                            p2 = cc.p(x3, y3);
-                            pt = cc.p(x4, y4);
-
-                            tile = this._mapWall.getTileAt(i+1,j);
-                            if (tile) {
-                                p1 = cc.p(x4, y4);
-                                pt = null;
-                            }
-
-                            tile = this._mapWall.getTileAt(i,j+1);
-                            if (tile) {
-                                p2 = cc.p(x4, y4);
-                                pt = null;
-                            }
-
-                        } else { // 右
-                            p1 = cc.p(x2, y2);
-                            p2 = cc.p(x4, y4);
-                            tile = this._mapWall.getTileAt(i+1,j);
-                            if(tile!=null) continue;
-                        }
-
-                    }
-                    else if(px < x1){
-                        if (py > y2) { // 左上
-                            p1 = cc.p(x3, y3);
-                            p2 = cc.p(x2, y2);
-                            pt = cc.p(x1, y1);
-
-                            tile = this._mapWall.getTileAt(i-1,j);
-                            if (tile) {
-                                p1 = cc.p(x1, y1);
-                                pt = null;
-                            }
-
-                            tile = this._mapWall.getTileAt(i,j-1);
-                            if (tile) {
-                                p2 = cc.p(x1, y1);
-                                pt = null;
-                            }
-
-                        } else if (py < y4) { // 左下
-                            p1 = cc.p(x4, y4);
-                            p2 = cc.p(x1, y1);
-                            pt = cc.p(x3, y3);
-
-                            tile = this._mapWall.getTileAt(i,j+1);
-                            if (tile) p1 = cc.p(x3, y3);
-
-                            tile = this._mapWall.getTileAt(i-1,j);
-                            if (tile) p2 = cc.p(x3, y3);
-
-                        } else { // 左
-                            p1 = cc.p(x3, y3);
-                            p2 = cc.p(x1, y1);
-                            tile = this._mapWall.getTileAt(i-1,j);
-                            if(tile!=null) continue;
-                        }
-
-                    }
-
-                }
-                if (i==13&&j==16) {}
-                //if (p1.x == p2.x && p1.y == p2.y) continue;
-                if (pt) {
-                    draw.drawSegment(p1, pt, 2, cc.color.RED);
-                    draw.drawSegment(pt, p2, 2, cc.color.RED);
-                } else {
-                    draw.drawSegment(p1, p2, 2, cc.color.RED);
+                //var x1 = lt.x, y1 = lt.y;
+                //var x2 = rt.x, y2 = rt.y;
+                //var x3 = lb.x, y3 = lb.y;
+                //var x4 = rb.x, y4 = rb.y;
+                // check for up side, data direction >>>
+                var distance = cc.pDistance(tile.getPosition(), cc.p(px, py));
+                if ((this._mapWall.getTileAt(x,y-1) == null) && (py > lt.y)) {
+                    p1 = lt;
+                    p2 = rt;
+                    this.addEdge(p1, p2, distance);
                 }
 
-                var d = {
-                    p1: p1,
-                    p2: p2,
-                    next: -1,
-                    prev: -1,
-                    distance: cc.pDistance(cc.p(i, j), this._player.TilePos)
-                };
-                this._edges.push(d);
+                // check for down side, data direction <<<
+                if ((this._mapWall.getTileAt(x,y+1) == null) && (py < rb.y)) {
+                    p1 = rb;
+                    p2 = lb;
+                    this.addEdge(p1, p2, distance)
+                }
+                // check for left side, data direction ^^^
+                if ((this._mapWall.getTileAt(x-1,y) == null) && (px < lt.x)) {
+                    p1 = lb;
+                    p2 = lt
+                    this.addEdge(p1, p2, distance)
+                }
+                // check for right side, data direction vvv
+                if ((this._mapWall.getTileAt(x+1,y) == null) && (px > rt.x)) {
+                    p1 = rt;
+                    p2 = rb;
+                    this.addEdge(p1, p2, distance)
+                }
+            }
+        }
+        this.edges = _.sortBy(this.edges, 'distance');
+        // Connect edges
+        for (var i=0; i<this.edges.length; i++) {
+            var eNow = this.edges[i];
+            if (eNow.prev != -1 && eNow.next != -1)
+                continue;
+            for(var j=0; j<this.edges.length; j++) {
+                if (i == j)
+                    continue;
+                var eCheck = this.edges[j];
+                if (eCheck.prev != -1 && eCheck.next != -1)
+                    continue;
+
+                if (cc.pSameAs(eNow, eCheck)) {
+                    eNow.next = j;
+                    eCheck.prev = i;
+                }
+            }
+        }
+
+
+        this.updateEdges();
+
+        var edge = this.edges[0];
+        var next = edge.next;
+        var targetEdge;
+        //while (next >= 0) {
+        //    targetEdge = this.edges[next];
+        //    if (targetEdge.pt) {
+        //        draw.drawSegment(targetEdge.p1, targetEdge.pt, 2, cc.color.RED);
+        //        draw.drawSegment(targetEdge.pt, targetEdge.p2, 2, cc.color.RED);
+        //    } else {
+        //        draw.drawSegment(targetEdge.p1, targetEdge.p2, 2, cc.color.RED);
+        //    }
+        //    next = targetEdge.next;
+        //
+        //}
+
+        _.each(this.edges, function(targetEdge){
+            draw.drawSegment(targetEdge.p1, targetEdge.p2, 2, cc.color.RED);
+        });
+    },
+
+    getLineABC: function(pt1, pt2) {
+        var abc;
+
+        if (cc.pSameAs(pt1, pt2)) {
+            abc = { a:0, b:0, c:0 };
+        } else if (pt1.x == pt2.x) {
+            abc = { a:1, b:0, c:-pt1.x }
+        } else {
+            abc = { a:-(pt2.y - pt1.y) / (pt2.x - pt1.x), b:1, c:pt1.x * (pt2.y - pt1.y) / (pt2.x - pt1.x) - pt1.y };
+        }
+
+        return abc;
+    },
+
+
+    /**
+     * Get intersection point
+     * @param abc1
+     * @param abc2
+     * @returns {{x: number, y: number}}
+     */
+    getIntersectionPoint: function(abc1, abc2) {
+        var p = { x:0, y:0 };
+        var x = 0,
+            y = 0;
+        var a1 = abc1.a, b1 = abc1.b, c1 = abc1.c,
+            a2 = abc2.a, b2 = abc2.b, c2 = abc2.c;
+
+        if ((b1 == 0) && (b2 == 0)) {
+            return p;
+        } else if (b1 == 0) {
+            x = -c1;
+            y = -(a2 * x + c2) / b2;
+        } else if (b2 == 0) {
+            x = -c2;
+            y = -(a1 * x + c1) / b1;
+        } else {
+            if ((a1 / b1) == (a2 / b1)) {
+                return p;
+            } else {
+                x = (c1 - c2) / (a2  - a1);
+                y = -(a1 * x) - c1;
+            }
+        }
+
+        p = { x:x, y:y };
+
+        return p;
+    },
+
+    /**
+     * Update the edge
+     * @param edgeID            The edge that start the projection
+     * @param targetEdgeID      The target edge
+     * @param p                 Intersection point
+     * @param isNext            Is this a next check?
+     */
+    updateEdge: function(edgeID, targetEdgeID, p, isNext) {
+        // The edge that start the projection
+        var edgeStart = this.edges[edgeID];
+        // The target edge
+        var edgeToBeSliced = this.edges[targetEdgeID];
+
+        // Calculate for the edge to be kept
+        if (isNext) {
+            edgeStart.next = targetEdgeID;
+            edgeToBeSliced.p1 = p;
+            edgeToBeSliced.prev = edgeID;
+        } else {
+            edgeStart.prev = targetEdgeID;
+            edgeToBeSliced.p2 = p;
+            edgeToBeSliced.next = edgeID;
+        }
+
+        // Update all the 3 edges
+        this.edges[edgeID] = edgeStart;
+        this.edges[targetEdgeID] = edgeToBeSliced;
+    },
+
+    updateEdges: function() {
+        var edges = this.edges;
+        for (var i = 0, m = edges.length; i < m; i++) {
+            var e = edges[i];
+            var abc;
+            var intersectionData;
+            var lightSource = {
+                x: this._player.x,
+                y: this._player.y
+            };
+            if (e.next == -1) {
+                abc = this.getLineABC(e.p2, lightSource);
+                intersectionData = this.checkIntersection(abc, e.p2, i);
+                if (intersectionData.intersectID != -1) {
+                    this.updateEdge(i, intersectionData.intersectID, { x:intersectionData.x, y:intersectionData.y }, true);
+                }
+            }
+
+            if (e.prev == -1) {
+                abc = this.getLineABC(e.p1, lightSource);
+                intersectionData = this.checkIntersection(abc, e.p1, i);
+
+                // if found intersection point then split the edge at intersection point
+                if (intersectionData.intersectID != -1) {
+                    this.updateEdge(i, intersectionData.intersectID, { x:intersectionData.x, y:intersectionData.y }, false);
+                }
             }
         }
     },
+    getIntersectionPoint: function(abc1, abc2) {
+        var p = { x:0, y:0 };
+        var x = 0,
+            y = 0;
+        var a1 = abc1.a, b1 = abc1.b, c1 = abc1.c,
+            a2 = abc2.a, b2 = abc2.b, c2 = abc2.c;
 
+        if ((b1 == 0) && (b2 == 0)) {
+            return p;
+        } else if (b1 == 0) {
+            x = -c1;
+            y = -(a2 * x + c2) / b2;
+        } else if (b2 == 0) {
+            x = -c2;
+            y = -(a1 * x + c1) / b1;
+        } else {
+            if ((a1 / b1) == (a2 / b1)) {
+                return p;
+            } else {
+                x = (c1 - c2) / (a2  - a1);
+                y = -(a1 * x) - c1;
+            }
+        }
+
+        p = { x:x, y:y };
+
+        return p;
+    },
+    checkIntersection: function(lineABC, point, currentID) {
+        var edges = this.edges;
+        var i,
+            p,
+            abc;
+        var found = false;
+        var lightSource = { x:this._player.x, y:this._player.y };
+        for (var i = 0, m = edges.length; i < m; i++) {
+            if (i != currentID) {
+                var edge = edges[i];
+                abc = this.getLineABC(edge.p1, edge.p2);
+                p = this.getIntersectionPoint(abc, lineABC);
+
+                if ((p.x == point.x) && (p.y == point.y))   continue;   // Skip current point, confirm
+                if ((lightSource.x > point.x) && (p.x > point.x))   continue;
+                if ((lightSource.x < point.x) && (p.x < point.x))   continue;
+                if ((lightSource.y > point.y) && (p.y > point.y))   continue;
+                if ((lightSource.y < point.y) && (p.y < point.y))   continue;
+
+                // check if the intersection point is not on the edge
+                var bigX, bigY, smallX, smallY;
+                if (edge.p1.x > edge.p2.x) {
+                    bigX = edge.p1.x;       smallX = edge.p2.x;
+                } else {
+                    bigX = edge.p2.x;       smallX = edge.p1.x;
+                }
+
+                if (edge.p1.y > edge.p2.y) {
+                    bigY = edge.p1.y;       smallY = edge.p2.y;
+                } else {
+                    bigY = edge.p2.y;       smallY = edge.p1.y;
+                }
+
+                // If the intersection point is note on the edge, ignore it
+                if ((p.x < smallX) || (p.x > bigX) || (p.y < smallY) || (p.y > bigY))
+                    continue;
+
+                found = true;
+                break;
+            }
+        }
+        // if not found, marked as not found with zero filled
+        if (!found) {
+            p = { x: 0, y: 0 };
+            i = -1;
+        }
+
+        // return intersection point and intersect id
+        return { x:p.x, y: p.y, intersectID:i};
+    },
 
     onEnter: function() {
         this._super();

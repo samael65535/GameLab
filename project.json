@@ -12,6 +12,7 @@
     "modules" : ["cocos2d"],
 
     "jsList" : [
+		"src/underscore.js",
 		"src/resource.js",
         "src/Util.js",
 		"src/Fluid.js",
