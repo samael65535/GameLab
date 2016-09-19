@@ -15,6 +15,7 @@
 * HUE
 * 光线投影(cocos2d-js没有渐变的扇形)
 
+#
  ----------------------------------------------------------------------------
   "THE BEER-WARE LICENSE" (Revision 42):
   <samael.65535@gmail.com> wrote this file. As long as you retain this notice you
