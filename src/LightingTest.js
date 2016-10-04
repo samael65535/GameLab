@@ -9,7 +9,7 @@ var Player = cc.Sprite.extend({
         return true;
     }
 });
-var RayTracing = cc.Layer.extend({
+var LightingTest = cc.Layer.extend({
     _map: null,
     _mapWall: null,
     _mapGround: null,
@@ -228,30 +228,27 @@ var RayTracing = cc.Layer.extend({
 
                 var distance = cc.pDistance(tile.getPosition(), cc.p(px, py));
 
-                if (y == 15 && x == 16) {
-                    cc.log("kdkdk");
-                }
                 // check for up side, data direction >>>
-                if ((this._mapWall.getTileAt(x,y-1) == null) && (py-50 >= lt.y)) {
+                if ((this._mapWall.getTileAt(x,y-1) == null) && (py-49 >= lt.y)) {
                     p1 = lt;
                     p2 = rt;
                     this.addEdge(p1, p2, distance, y, x);
                 }
 
                 // check for down side, data direction <<<
-                if ((this._mapWall.getTileAt(x,y+1) == null) && (py+50 <= rb.y)) {
+                if ((this._mapWall.getTileAt(x,y+1) == null) && (py+49 <= rb.y)) {
                     p1 = rb;
                     p2 = lb;
                     this.addEdge(p1, p2, distance, y, x);
                 }
                 // check for left side, data direction ^^^
-                if ((this._mapWall.getTileAt(x-1,y) == null) && (px+50 <= lt.x)) {
+                if ((this._mapWall.getTileAt(x-1,y) == null) && (px+49 <= lt.x)) {
                     p1 = lb;
                     p2 = lt;
                     this.addEdge(p1, p2, distance, y, x);
                 }
                 // check for right side, data direction vvv
-                if ((this._mapWall.getTileAt(x+1,y) == null) && (px-50 >= rt.x)) {
+                if ((this._mapWall.getTileAt(x+1,y) == null) && (px-49 >= rt.x)) {
                     p1 = rt;
                     p2 = rb;
                     this.addEdge(p1, p2, distance, y, x);
