@@ -10,7 +10,7 @@ var g_resources = [
     "res/map.tmx",
     "res/player.jpg",
     "res/ground.jpg",
-    "res/Laser.bmp"
+    "res/Laser.png"
 ];
 for (var i in res) {
     g_resources.push(res[i]);
